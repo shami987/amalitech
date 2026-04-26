@@ -1,13 +1,20 @@
 // Simulates the bot conversation by traversing the flow graph
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
-export default function PreviewMode({ nodes, onExit }) {
+export default function PreviewMode({ nodes, onExit, onActiveNode }) {
   const startNode = nodes.find((n) => n.type === "start");
   const [currentId, setCurrentId] = useState(startNode?.id ?? null);
   const [history, setHistory] = useState([]);
+  const bottomRef = useRef(null);
 
   const current = nodes.find((n) => n.id === currentId);
   const isEnd = current?.options.length === 0;
+
+  // Notify parent of active node so canvas can highlight it
+  useEffect(() => { onActiveNode(currentId); }, [currentId]);
+
+  // Auto-scroll chat to latest message
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [currentId]);
 
   function pick(nextId) {
     setHistory((h) => [...h, currentId]);
@@ -20,7 +27,7 @@ export default function PreviewMode({ nodes, onExit }) {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#0f1117] p-6">
+    <div className="flex-1 flex flex-col items-center bg-[#0f1117] p-6 overflow-y-auto">
       <div className="w-full max-w-md flex flex-col gap-3">
 
         {/* Chat history */}
@@ -61,9 +68,10 @@ export default function PreviewMode({ nodes, onExit }) {
             </button>
           )}
         </div>
+
+        <div ref={bottomRef} />
       </div>
 
-      {/* Exit preview */}
       <button
         onClick={onExit}
         className="mt-8 text-xs text-slate-500 hover:text-slate-300 underline"

@@ -13,11 +13,13 @@ const TYPE_BADGE = {
   end:      "bg-rose-500/20 text-rose-400",
 };
 
-export default function FlowNode({ node, isSelected, onSelect, onDrag }) {
+export default function FlowNode({ node, isSelected, isActive, onSelect, onDrag, onDragEnd }) {
   const dragStart = useRef(null);
+  const hasDragged = useRef(false);
 
   function handleMouseDown(e) {
     e.stopPropagation();
+    hasDragged.current = false;
     dragStart.current = {
       mouseX: e.clientX,
       mouseY: e.clientY,
@@ -26,6 +28,7 @@ export default function FlowNode({ node, isSelected, onSelect, onDrag }) {
     };
 
     function onMove(e) {
+      hasDragged.current = true;
       const dx = e.clientX - dragStart.current.mouseX;
       const dy = e.clientY - dragStart.current.mouseY;
       onDrag(node.id, {
@@ -35,6 +38,8 @@ export default function FlowNode({ node, isSelected, onSelect, onDrag }) {
     }
 
     function onUp() {
+      // Only snapshot for undo after a real drag, not a click
+      if (hasDragged.current) onDragEnd();
       dragStart.current = null;
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
@@ -52,6 +57,7 @@ export default function FlowNode({ node, isSelected, onSelect, onDrag }) {
       className={`absolute w-52 rounded-xl border-2 p-3 cursor-grab active:cursor-grabbing select-none transition-shadow
         ${TYPE_STYLES[node.type]}
         ${isSelected ? "ring-2 ring-white/40 shadow-lg shadow-white/10" : ""}
+        ${isActive ? "ring-2 ring-indigo-400 shadow-lg shadow-indigo-500/30" : ""}
       `}
     >
       <span className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${TYPE_BADGE[node.type]}`}>

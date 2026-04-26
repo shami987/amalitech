@@ -2,7 +2,7 @@
 import FlowNode from "./FlowNode";
 import Connectors from "./Connectors";
 
-export default function Canvas({ nodes, selectedId, onSelect, onDrag }) {
+export default function Canvas({ nodes, selectedId, activeId, onSelect, onDrag, onDragEnd }) {
   return (
     <div
       className="relative flex-1 overflow-auto bg-[#0f1117]"
@@ -11,14 +11,16 @@ export default function Canvas({ nodes, selectedId, onSelect, onDrag }) {
     >
       {/* Fixed-size inner area matching canvas_size from flow data */}
       <div className="relative" style={{ width: 1400, height: 900 }}>
-        <Connectors nodes={nodes} />
+        <Connectors nodes={nodes} activeId={activeId} />
         {nodes.map((node) => (
           <FlowNode
             key={node.id}
             node={node}
             isSelected={selectedId === node.id}
+            isActive={activeId === node.id}
             onSelect={onSelect}
             onDrag={onDrag}
+            onDragEnd={onDragEnd}
           />
         ))}
       </div>

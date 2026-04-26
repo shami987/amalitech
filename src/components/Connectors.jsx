@@ -1,8 +1,8 @@
-// Draws SVG bezier connector lines between parent and child nodes
+// Draws SVG bezier connector lines between parent and child nodes, highlights active path
 const NODE_W = 208; // matches w-52 = 13rem = 208px
 const NODE_H = 110; // approximate card height
 
-export default function Connectors({ nodes }) {
+export default function Connectors({ nodes, activeId }) {
   const lines = [];
 
   nodes.forEach((node) => {
@@ -10,22 +10,24 @@ export default function Connectors({ nodes }) {
       const target = nodes.find((n) => n.id === opt.nextId);
       if (!target) return;
 
-      // Start from bottom-center of parent, end at top-center of child
+      const isActive = node.id === activeId;
       const x1 = node.position.x + NODE_W / 2;
       const y1 = node.position.y + NODE_H;
       const x2 = target.position.x + NODE_W / 2;
       const y2 = target.position.y;
-
       const cy = (y1 + y2) / 2;
       const path = `M ${x1} ${y1} C ${x1} ${cy}, ${x2} ${cy}, ${x2} ${y2}`;
+      const color = isActive ? "#a78bfa" : "#6366f1";
+
+      // Arrow head pointing downward into target node
+      const arrowSize = 6;
+      const arrow = `M ${x2} ${y2} l ${-arrowSize / 2} ${-arrowSize} l ${arrowSize} 0 Z`;
 
       lines.push(
         <g key={`${node.id}-${opt.nextId}-${opt.label}`}>
-          {/* Shadow for depth */}
           <path d={path} stroke="#000" strokeWidth="4" fill="none" strokeOpacity="0.3" />
-          <path d={path} stroke="#6366f1" strokeWidth="2" fill="none" strokeOpacity="0.8" />
-          {/* Arrow head */}
-          <circle cx={x2} cy={y2} r="3" fill="#6366f1" />
+          <path d={path} stroke={color} strokeWidth={isActive ? 2.5 : 1.5} fill="none" strokeOpacity="0.9" />
+          <path d={arrow} fill={color} />
         </g>
       );
     });
